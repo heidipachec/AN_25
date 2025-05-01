@@ -1,0 +1,132 @@
+---
+title: "Preliminares Tarea 3. Regresiones Lineales"
+author: "Heidi Idali Pacheco Almaraz "
+date: "Marzo 2025"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 1
+    theme: cerulean
+---
+
+
+<style>
+body {
+text-align: justify}
+</style>
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(tidyverse)
+library(pracma)
+library(plotly)
+library(MASS)
+library(ISLR2)
+library(car)
+library(corrplot)
+library(rgl)
+library(scatterPlotMatrix)
+
+
+library(openxlsx)
+library(readxl)
+library(writexl)
+library(quantmod)
+library(xts)
+library(zoo)
+library(dygraphs)
+knitr::knit_hooks$set(webgl = hook_webgl)
+```
+
+
+# Indicadores económicos INEGI 
+
+```{r}
+inegi_ie <- read_xls("C:/Users/kelip/OneDrive/Documentos/Análisis Numérico/Tareas/BIE_BIE20250414190320.xls", range = cell_rows(2:389))
+```
+
+
+```{r}
+names(inegi_ie) <- c("Periodo", "Indicador_Global_Actividad_Economica", "Actividades_Primarias", "Actividad_Industrial", "Indice_Volumen_Fisico_Construcción", "Actividades_Terciarias", "Precios_Consumidor", "Precios_Consumidor_Subyacente", "Precios_Productor", "Tasa_Desocupacion_Urbana", "Tendencia_Empleo_Manufacturas", "Asegurados_Trabajadores_IMSS", "Expectativa_Personal_Ocupado", "Importaciones_totales", "Importaciones_No_Petroleras", "Exportaciones_Totales", "Exportaciones_Petroleras", "Exportaciones_No_Petroleras", "Precio_Promedio_Petroleo_Crudo")
+```
+
+
+```{r}
+inegi_ie$Periodo <- ym(inegi_ie$Periodo)
+write.xlsx(inegi_ie, "./inegi_data.xlsx")
+glimpse(inegi_ie)
+```
+
+
+```{r}
+Produccion <- names(inegi_ie)[2:6]
+Produccion
+Precios <- names(inegi_ie)[9:11]
+Precios
+Mercado_Laboral <- names(inegi_ie)[12:15]
+Mercado_Laboral
+Sector_Externo <- names(inegi_ie)[16:21]
+```
+
+
+```{r}
+colSums(is.na(inegi_ie))
+```
+
+
+```{r}
+inegi_ie <- inegi_ie |> dplyr::select(-Precios_Productor, -Tasa_Desocupacion_Urbana, -Asegurados_Trabajadores_IMSS, -Expectativa_Personal_Ocupado) |> drop_na()
+glimpse(inegi_ie)
+```
+
+
+```{r}
+write.xlsx(inegi_ie, "./inegi_subdata.xlsx")
+inegi_ie <- read.xlsx("./inegi_subdata.xlsx", detectDates = TRUE)
+```
+
+
+# Valores Financieros 
+
+Utilizamos el package `quantmod` para descargar valores financieros desde [Yahoo Finance](https://finance.yahoo.com/). Ejemplo NVDA.
+
+```{r}
+begin_date = "2020-01-01"
+end_date = "2025-04-04"
+getSymbols("NVDA", src = "yahoo", from = begin_date, to = end_date, periodicity = "daily")
+
+chartSeries(NVDA)
+```
+
+
+```{r}
+tickers <- c("MSFT", "AAPL", "GOOGL", "AMZN", "META", "NVDA", "ADBE", "CRM", "ORCL", "TSLA")
+getSymbols(tickers, src = "yahoo", from = begin_date, to= end_date, periodicity= "daily")
+class(AAPL)
+```
+
+
+```{r}
+lista <- lapply(tickers, function(x) Cl(get(x)))
+precio_cierre <- do.call(merge,lista)
+
+dygraph(precio_cierre)
+saveRDS(precio_cierre, "precio_cierre.RDS")
+
+precio_cierre <- readRDS("precio_cierre.RDS")
+```
+
+
+```{r}
+precio_cierre_df <- as.data.frame(precio_cierre)
+precio_cierre_df <- mutate(precio_cierre_df, Fecha= index(precio_cierre), .before =1)
+glimpse(precio_cierre_df)
+write.xlsx(precio_cierre_df, "precio_cierre_df.xlsx")
+```
+
+
+
+
+
