@@ -1,0 +1,699 @@
+---
+title: "Modelo de Crecimiento de Solow"
+author: "Economía Industrial"
+format: html
+editor: visual
+---
+
+```{=html}
+<style>
+body {
+text-align: justify}
+</style>
+```
+
+```{r}
+#| code-fold: true
+
+library(readxl)
+library(ggplot2)
+library(dplyr)
+```
+
+El modelo de crecimiento de Solow se llama así en honor al economista Robert Solow y se desarrolló en los años cincuenta y sesenta. Se publicó en Robert M. Solow, *"A Contribution to the Theory of Economic Growth"*, Quarterly Journal of Economics, febrero, 1956, págs. 65-94.
+
+Este modelo de crecimiento pretende mostrar cómo interactúan el crecimiento del stock de capital, el crecimiento de la población activa y los avances de la tecnología en una economía y cómo afectan a su producción total de bienes y servicios.
+
+## **a) Función de producción y Función de consumo**
+
+Ahora bien, **¿Cómo la oferta y la demanda de bienes determinan la acumulación de capital?** Suponiendo que la población activa y la tecnología se mantienen fijas.
+
+**La oferta de bienes** se basa en la función de producción, la cuál establece que la producción depende del stock de capital y de la población activa:
+
+$$Y=F(K,L)$$ Sin embargo, se toma el supuesto que la función de producción tiene rendimientos constantes de escala:
+
+$$zY = F(zK, zL)$$
+
+De tal manera que, si igualamos $z$ a $\frac{1}{L}$ en la ecuación anterior, podremos analizar las magnitudes de una economía en relación con el tamaño de la población activa:
+
+$$\frac{Y}{L} = F(\frac{K}{L}, 1)$$
+
+Así pues, el supuesto de los rendimientos constantes de escala implica que el tamaño de la economía no afecta a la relación entre la producción por trabajador y el capital por trabajador.
+
+Por lo tanto, podemos representar todas las magnitudes en cantidades por trabajador, a traves de letras minúsculas, de tal forma que:
+
+-   $y=\frac{Y}{L}$ es la producción por trabajador
+
+-   $k=\frac{K}{L}$ es el capital por trabajador
+
+Por lo que la función de producción esta escrita ahora como: $y=f(k)$ donde $f(k) = F(k,1)$.
+
+La pendiente de esta función de producción indica cuánta producción adicional se obtiene cuando se le da a un trabajador una unidad adicional de capital, es decir, el producto marginal de capital (PMK).
+
+$$PMK = f(k+1) - f(k)$$
+
+```{r}
+#| code-fold: true 
+#| fig-align: center
+
+alpha <- 0.5
+
+f_k <- function(k) {k^alpha}
+k_val <- seq(0, 10, length.out = 500)
+y_val <- f_k(k_val)
+
+k0 <- 4
+k1 <- k0 + 1
+PMK <- f_k(k1) - f_k(k0)
+
+plot(k_val, y_val, type = "l", lwd = 2, col = "darkblue", xlab = "Capital por trabajador (k)", ylab = "Producción por trabajador (y)")
+
+points(c(k0, k1), c(f_k(k0), f_k(k1)), pch = 19, col = "red")
+arrows(k0, f_k(k0), k1, f_k(k1), length = 0.1, col = "darkgreen", lwd = 2)
+segments(k1, f_k(k0), k1, f_k(k1), lty = 2, col = "orange")
+segments(k0, f_k(k0), k1, f_k(k0), lty = 2, col = "orange")
+text((k0 + k1)/2, (f_k(k0) + f_k(k1))/2, "PMK", pos = 4, col = "darkgreen")
+text(k0+(k1-k0)/2, f_k(k0), "1", pos = 1)
+
+legend("bottomright", legend = "Producción, f(k)", col = "darkblue", lty =1, lwd = 2, bty = "n")
+grid()
+```
+
+En la gráfica, la función de producción es cada vez más plana a medida que aumenta $k$, lo que indica que el producto marginal del capital es decreciente. Cuando el valor de $k$ es bajo, el trabajador medio sólo tiene un poco de capital para trabajar, por lo que una unidad adicional de capital resulta muy útil y genera una gran cantidad de producción adicional. No obstante, cuando el valor de $k$ es alto, el trabajador medio tiene una gran cantidad de capital, por lo que una unidad adicional sólo eleva un poco la producción.
+
+En el modelo de Solow, la **demanda de bienes** procede del consumo y de la inversión, por lo tanto, la producción por trabajador, $y$, se divide entre el consumo por trabajador $c$, y la inversión por trabajador, $i$: $$y=c+i$$
+
+El modelo supone que todos los años la gente ahorra una proporción $s$ de su renta y consume una proporción $(1-s)$, esto se expresa en la **función de consumo**, donde $s$ es la tasa de ahorro comprendida en un número entre 0 y 1:
+
+$$c=(1-s)y$$
+
+Con el objetivo de observar las implicaciones que tiene la función de consumo para la inversión, es necesario sustituir $c$ por $(1-s)y$ en $y=c+i$. Así, tenemos:
+
+$$y=(1-s)y+i$$
+
+Ahora si reordenamos los términos, nos queda que la inversión es igual al ahorro: $$i=sy$$
+
+Por lo tanto, la tasa de ahorro,$s$, también es la proporción de la producción que se dedica a la inversión.
+
+## **b) El crecimiento del stock de capital y el estado estacionario**
+
+Existen dos fuerzas que influyen en el stock de capital:
+
+1.  El stock de capital aumenta con la *inversión*, que es el gasto en nueva planta y equipo
+2.  El stock de capital disminuye con la *depreciación*, que es el desgaste del viejo capital
+
+Con la función anterior teníamos que, la inversión por trabajador $i$ es igual a $sy$. Si sustituimos $y$ por la función de producción, tenemos la inversión por trabajador en función del stock de capital por trabajador:
+
+$$i=sf(k)$$
+
+```{r}
+#| code-fold: true
+#| fig-align: center
+
+alpha <- 0.5
+s <- 0.3
+
+f_k  <- function(k) k^alpha         
+sf_k <- function(k) s*f_k(k)    
+
+k_val <- seq(0, 10, length.out = 500)
+y_val <- f_k(k_val)
+i_val <- sf_k(k_val)
+
+plot(k_val, y_val, type = "l", lwd = 3, col = "darkblue", ylim = c(0, max(y_val)), xlim = c(0, max(k_val)), xlab = "Capital por trabajador (k)", ylab = "Producción por trabajador (y)")
+lines(k_val, i_val, lwd = 3, col = "purple")
+
+text(8, f_k(8) + 0.2, expression(paste("Producción, ", f(k))), pos = 4, cex = 1)
+text(8, sf_k(8) - 0.2, expression(paste("Inversión, ", s*f(k))), pos = 4, cex = 1)
+grid()
+```
+
+La tasa de ahorro $s$ determina el reparto de la producción entre el consumo y la inversión. En cualquier nivel de capital, $k$, la produccuón es $f(k)$, la inversión es $sf(k)$ y el consumo es $f(k)-sf(k)$
+
+Por otro lado, suponemos que todos los años se desgasta o deteriora una determinada proporción, $δ$, el stock de capital.
+
+Entonces, la influencia de ambas fuerzas en el stock de capital puede expresarse como:
+
+$$Δk= i-δk$$
+
+Sin embargo, como $i$ es igual a sf(k), podemos reescribir la ecuación a:
+
+$$Δk=sf(k)-δk$$
+
+Así pues, podemos observar que a medida que aumenta el stock de capital, también lo hacen los niveles de producción e inversión, pero al mismo tiempo se incrementa la depreciación.
+
+Además, existe un nivel especifico de capital en el que la inversión y la depreciación se igualan, lo que significa que el stock de capital no cambia, ya que las fuerzas que lo afectan están en equilibrio.
+
+En este punto, tanto el capital como la producción permanecen constantes en el tiempo, sin crecer ni disminuir, lo que se conoce como **estado estacionario**. Este concepto es relevante porque, independientemente del nivel inicial de capital, la economía tiende a converger hacia este equilibrio a largo plazo.
+
+Por ello, el estado estacionario representa el punto de balance donde la economía se mantiene estable una vez alcanzado.
+
+```{r}
+#| code-fold: true
+#| fig-align: center
+
+s <- 0.3        
+delta <- 0.05   
+alpha <- 0.5
+k <- seq(0, 100, length.out = 200)  
+
+f_k <- k^alpha
+inversion <- s*f_k
+depreciacion <- delta*k
+
+diff <- inversion - depreciacion
+idx <- which(diff[-1] * diff[-length(diff)] < 0)[1] 
+
+k1 <- k[idx]
+k2 <- k[idx + 1]
+y1 <- inversion[idx]
+y2 <- inversion[idx + 1]
+
+k_star <- k1 + (0 - (y1 - depreciacion[idx])) * (k2 - k1) / ((y2 - depreciacion[idx + 1]) - (y1 - depreciacion[idx]))
+y_star <- s*k_star^alpha
+
+plot(k, inversion, type="l", col="blue", lwd=2, xlab="Capital por trabajador (k)", ylab="Inversión y Depreciación", ylim=c(0, max(inversion, depreciacion)))
+lines(k, depreciacion, col="red", lwd=2)
+points(k_star, y_star, pch=19, col="darkgreen", cex=2)
+text(k_star, y_star, labels = "Estado estacionario", pos=4, col="black", font=1.5,cex=1)
+
+legend("bottomright",legend=c("Depreciación δk", "Inversión sf(k)"), col=c("red", "blue"), lwd=2, bty = "n")
+grid()
+```
+
+En este contexto, el modelo de Solow muestra que un aumento del ahorro acelera el crecimiento, pero sólo temporalmente. Un aumento de la tasa de ahorro eleva el crecimiento hasta que la economía alcanza el nuevo estado estacionario. Si ésta mantiene una elevada tasa de ahorro, también mantendrá un gran stock de capital y un elevado nivel de producción, pero no una elevada tasa de crecimiento indefinidamente.
+
+## **c) El nivel de capital correspondiente a la regla de oro**
+
+Los responsables de la politica económica pueden fijar la tasa de ahorro para determinar el estado estacionario de la economía, con el objetivo de maximizar el consumo por trabajador, que es el indicador clave del bienestar.
+
+El consumo en el estado estacionario se calcula como la producción menos la depreciación del capital, expresado como: $c^*=f(k^*)-δk^*$ donde $f(k^*)$ es la producción por trabajador y $δk^*$ la depreciación.
+
+Existe un nivel de capital, llamado nivel de la regla de oro $k^*_{oro}$ que maximiza este consumo. Si el stock de capital es menor que este nivel, aumentar el capital incrementa el consumo; si es mayor, aumentarlo reduce el consumo.
+
+La condición matemática que define la regla de oro es: $PMK = δ$ o equivalentemente, $PMK-δ=0$, donde PMK es el producto marginal del capital.
+
+```{r}
+#| code-fold: true 
+#| fig-align: center
+
+alpha <- 0.5
+delta <- 0.05
+s_oro <- alpha      
+k <- seq(0, 500, length.out = 500)
+
+f_k <- k^alpha
+i_k <- s_oro * f_k
+d_k <- delta * k
+
+k_oro <- (alpha / delta)^(1/(1 - alpha))
+y_oro <- k_oro^alpha
+i_oro <- s_oro * y_oro
+c_oro <- y_oro - i_oro
+
+par(mar = c(5, 8, 2, 2)) 
+
+plot(k, f_k, type = "l", lwd = 2, col = "black", ylim = c(0, max(f_k)),
+     xlab = "Capital por trabajador en el estado estacionario (k*)",
+     ylab = "Producción, depreciación e inversión por 
+     trabajador en el estado estacionario")
+
+lines(k, i_k, lwd = 2, col = "orange")
+lines(k, d_k, lwd = 2, col = "pink")
+abline(v = k_oro, lty = 2, lwd = 1.5, col = "red")
+
+points(k_oro, y_oro, pch = 16, cex = 1.2, col = "dodgerblue")
+
+legend("topleft", legend = c(expression(f(k^"*")),
+                             expression(s[oro]*f(k^"*")),
+                             expression(delta*k^"*")),
+       lwd = 2, col = c("black", "orange", "pink"), lty = 1, bty = "n")
+grid()
+```
+
+Solo existe una tasa de ahorro que genera el nivel de capital correspondiente a la regla de oro, $k_{oro}^*$. Cualquier variación de la tasa de ahorro desplazaría la curva $sf(k)$ y llevaría a la economía a un estado estacionario en el que el nivel de consumo sería menor.
+
+Por otro lado, si la economía tiene un exceso de capital por encima de $k_{oro}^*$, reducir la tasa de ahorro provoca un aumento inmediato del consumo y una disminución de la inversión. El stock de capital disminuye gradualmente hasta alcanzar el nuevo estado estacionario, y el consumo es mayor durante toda la transición y en el estado final. Por el contrario, si la economía tiene un capital insuficiente, por debajo de $k_{oro}^*$, aumentar la tasa de ahorro reduce incialmente el consumo y aumenta la inversión.
+
+Esto hace que el capital, la producción y el consumo crezcan gradualmente hasta el nuevo estado estacionario, donde el consumo es mayor que al inicio. Esta transición implica un compromiso entre el bienestar de las generaciones actuales, que deben consumir menos, y las futuras, que se beneficiarán de una mayor consumo.
+
+## **d) El estado estacionario con crecimiento de la población**
+
+El estado estacionario con crecimiento de la población se caracteriza porque el capital por trabajador permanece constante a lo largo del tiempo, a pesar de que la población activa crece a una tasa constante $n$. En este contexto, la acumulación de capital por trabajador está determinada por tres fuerzas: la inversión, que aumenta el capital; la depreciación, que lo reduce; y el crecimiento de la población, que también disminuye el capital por trabajador al repartir el stock de capital entre más trabajadores.
+
+Matemáticamente, la variación del capital por trabajador $k$ se expresa como:$Δk = sf(k) - (δ + n)k$, donde $s$ es la tasa de ahorro, $f(k)$ la producción por trabajador, $δ$ la tasa de depreciación y $n$ la tasa de crecimiento de la población.
+
+El término $(δ+n)k$ representa la inversión de mantenimiento necesaria para mantener constante el capital por trabajador, compensando tanto la depreciación como el aumento de trabajadores. El estado estacionario se alcanza cuando la inversión iguala esta inversión de mantenimiento, es decir, cuando: $sf(k^*)=(δ+n)k^*$, y por lo tanto, $Δk=0$.
+
+En ese estado, aunque el capital y la producción por trabajador son constantes, la producción total crece a la tasa $n$ debido al aumento de la población. Además, un aumento en la tasa de crecimiento poblacional reduce el nivel de capital por trabajador $y$, por ende, la producción por trabajador en el estado estacionario, lo que implica que países con mayor crecimiento demográfico tienden a tener niveles de renta per cápita más bajos.
+
+```{r}
+#| code-fold: true
+#| fig-align: center
+
+s <- 0.3        
+delta <- 0.05   
+n <- 0.01      
+alpha <- 0.5
+k <- seq(0, 100, length.out = 500)  
+
+f_k <- k^alpha
+inversion <- s*f_k
+mantenimiento <- (delta + n)*k
+diff <- inversion - mantenimiento
+idx <- which(diff[-1] * diff[-length(diff)] < 0)[1] 
+
+k1 <- k[idx]
+k2 <- k[idx + 1]
+y1 <- inversion[idx]
+y2 <- inversion[idx + 1]
+
+k_star <- k1 + (0 - (y1 - mantenimiento[idx]))*(k2 - k1)/((y2 - mantenimiento[idx + 1])-(y1 - mantenimiento[idx]))
+y_star <- s*k_star^alpha
+
+plot(k, mantenimiento, type="l", col="tomato", lwd=3, xlab="Capital por trabajador", ylab="Inversión, inversión de mantenimiento", ylim=c(0, max(inversion, mantenimiento)), axes=FALSE)
+lines(k, inversion, col="dodgerblue", lwd=3)
+
+abline(v = k_star, lty=3, lwd=1.5)
+points(k_star, y_star, pch=20, col="black", cex=1.5)
+
+axis(1, at = c(0, k_star, max(k)), labels = c("", expression(k^"*"), ""))
+axis(2)
+box()
+
+legend("topleft", legend=c("Inversión de mantenimiento (δ+n)k", "Inversión sf(k)"), col=c("tomato", "dodgerblue"), lwd=3, bty="n", cex=1)
+
+grid()
+```
+
+El estado estacionario con crecimiento de la población muestra que, aunque el capital por trabajador $k$ se mantiene constante cuando $sf(k^*)=(δ+n)k^*$, el crecimiento demográfico $n$ tiene implicaciones profundas en la economía:
+
+1.  Aunque el PIB per cápita no crece en el largo plazo, la producción total aumenta a la tasa $n$, explicando así el crecimiento agregado pero no la mejora en el nivel de vida.
+
+2.  Una mayor tasa de crecimiento poblacional reduce $k^*$ y, por tanto, el producto por trabajador $y^*$, lo que ayuda a entender por qué países con poblaciones en rápido crecimiento suelen presentar menores ingresos per cápita.
+
+3.  El crecimiento demográfico redefine la regla de oro: el nivel óptimo de capital ya no solo compensa la depreciación $δ$, sino también el aumento de trabajadores $n$, exigiendo que $PMK-δ=n$ para maximizar el consumo.
+
+Así, el modelo de Solow revela que el crecimiento poblacional no solo diluye el capital por trabajador, sino que también condiciona el desarrollo económico y el bienestar a largo plazo.
+
+```{r}
+#| code-fold: true 
+#| fig-align: center
+
+s <- 0.3        
+delta <- 0.05   
+n1 <- 0.01      
+n2 <- 0.04      
+alpha <- 0.5
+k <- seq(0, 35, length.out = 500)  
+
+f_k <- k^alpha
+inversion <- s*f_k
+mantenimiento1 <- (delta+n1)*k
+mantenimiento2 <- (delta+n2)*k
+
+diff1 <- inversion - mantenimiento1
+idx1 <- which(diff1[-1] * diff1[-length(diff1)] < 0)[1] 
+k1 <- k[idx1]
+k2 <- k[idx1 + 1]
+y1 <- inversion[idx1]
+y2 <- inversion[idx1 + 1]
+k_star1 <- k1 + (0 - (y1 - mantenimiento1[idx1])) * (k2 - k1) / ((y2 - mantenimiento1[idx1 + 1]) - (y1 - mantenimiento1[idx1]))
+y_star1 <- s * k_star1^alpha
+
+diff2 <- inversion - mantenimiento2
+idx2 <- which(diff2[-1] * diff2[-length(diff2)] < 0)[1] 
+k1b <- k[idx2]
+k2b <- k[idx2 + 1]
+y1b <- inversion[idx2]
+y2b <- inversion[idx2 + 1]
+k_star2 <- k1b + (0 - (y1b - mantenimiento2[idx2])) * (k2b - k1b) / ((y2b - mantenimiento2[idx2 + 1]) - (y1b - mantenimiento2[idx2]))
+y_star2 <- s * k_star2^alpha
+
+plot(k, mantenimiento2, type="l", col="deepskyblue4", lwd=3, xlab="Capital por trabajador", ylab="Inversión, inversión de mantenimiento", ylim=c(0, max(inversion, mantenimiento2)), axes=FALSE)
+lines(k, mantenimiento1, col="firebrick4", lwd=3)
+lines(k, inversion, col="seagreen4", lwd=3)
+
+abline(v = k_star1, lty=3)
+abline(v = k_star2, lty=3)
+points(k_star1, y_star1, pch=20, col="black", cex=1.5)
+points(k_star2, y_star2, pch=20, col="black", cex=1.5)
+
+axis(1, at = c(k_star2, k_star1), labels = c(expression(k[2]^"*"), expression(k[1]^"*")))
+axis(2)
+box()
+
+legend("topleft", legend = c(expression((delta + n[2])*k), expression((delta + n[1])*k), expression(sf(k))), lwd=2, col=c("deepskyblue3", "firebrick4", "seagreen4"), lty = 1, bty="n")
+
+segments(k_star1, 0, k_star1, y_star1, lty=3)
+segments(k_star2, 0, k_star2, y_star2, lty=3)
+
+grid()
+```
+
+## **e) El progreso tecnológico**
+
+Hasta ahora, el modelo ha supuesto que la relación entre la cantidad de capital, trabajo y la producción de bienes y servicios permanece constante. Sin embargo, el modelo puede modificarse para reflejar el progreso tecnológico exógeno, que aumenta la capacidad productiva de una sociedad a lo largo del tiempo.
+
+Se incorpora el progreso tecnológico a través del concepto de eficiencia del trabajo $E$, que refleja los avances en tecnología, conocimiento, educación y salud de los trabajadores.
+
+Originalmente, la función de producción relaciona la producción total $Y$ con el capital $K$ y el trabajo $L$ mediante $Y=F(K,L)$. Sin embargo, al introducir el progreso tecnológico, la función se modifica a $Y=F(K, L × E)$ donde $L×E$ representa el número de trabajadores efectivos. Esto significa que, aunque la cantidad de trabajadores $L$ permanezca constante, un aumento en la eficiencia $E$ eleva la productividad, haciendo que cada trabajador contribuya más a la producción.
+
+El crecimiento de la eficiencia del trabajo $E$ se asume constante a una tasa g. Por ejemplo, si $g=2$% anual, la productividad de cada trabajador aumenta un $2$% cada año, lo que equivale a tener más trabajadores sin que la población real crezca. Así, el progreso tecnológico actúa como un multiplicador de la fuerza laboral.
+
+Combinado con el crecimiento de la población $n$, el número de trabajadores efectivos $L×E$ crece a una tasa $n+g$, lo que explica parte del crecimiento económico a largo plazo.
+
+## **f) El estado estacionario con progreso tecnológico**
+
+El estado estacionario con progreso tecnológico se caracteriza por un equilibrio en el cual las variables clave de la economía, expresadas en términos por trabajador efectivo, permanecen constantes.
+
+En este contexto, el progreso tecnológico se modela como un factor que aumenta la eficiencia del trabajo $E$, lo que implica que cada trabajador se vuelve más productivo con el tiempo.
+
+Esto es análogo al efecto de crecimiento de la población, ya que el número de trabajadores efectivos $L×E$ crece a una tasa determinada por la suma de la tasa de crecimiento poblacional $n$ y la tasa de progreso tecnológico $g$.
+
+En el estado estacionario, el capital por trabajador efectivo $k=\frac{K}{L×E}$ y la producción por trabajador efectivo $y=\frac{Y}{L×E}$ no cambian. Esto ocurre cuando la inversión bruta $sf(k)$ iguala a la inversión de mantenimiento, que ahora incluye tres componentes: la depreciación del capital $δk$, el capital necesario para equipar a los nuevos trabajadores $nk$, y el capital requerido para los trabajadores efectivos adicionales generados por el progreso tecnológico $gk$. Matemáticamente, esta condición se expresa como:
+
+$$Δk=sf(k)-(δ+n+g)k=0$$
+
+```{r}
+#| code-fold: true
+#| fig-align: center
+
+s <- 0.3        
+delta <- 0.05   
+n <- 0.01      
+alpha <- 0.5
+k <- seq(0, 100, length.out = 500)  
+
+f_k <- k^alpha
+inversion <- s*f_k
+mantenimiento <- (delta + n)*k
+diff <- inversion - mantenimiento
+idx <- which(diff[-1] * diff[-length(diff)] < 0)[1] 
+
+k1 <- k[idx]
+k2 <- k[idx + 1]
+y1 <- inversion[idx]
+y2 <- inversion[idx + 1]
+
+k_star <- k1 + (0 - (y1 - mantenimiento[idx]))*(k2 - k1)/((y2 - mantenimiento[idx + 1])-(y1 - mantenimiento[idx]))
+y_star <- s*k_star^alpha
+
+plot(k, mantenimiento, type="l", col="slateblue2", lwd=3, xlab="Capital por trabajador efectivo", ylab="Inversión, inversión de mantenimiento", ylim=c(0, max(inversion, mantenimiento)), axes=FALSE)
+lines(k, inversion, col="slategray3", lwd=3)
+
+abline(v = k_star, lty=3, lwd=1.5)
+points(k_star, y_star, pch=20, col="black", cex=1.5)
+
+axis(1, at = c(0, k_star, max(k)), labels = c("", expression(k^"*"), ""))
+axis(2)
+box()
+
+legend("topleft", legend=c("Inversión de mantenimiento (δ+n+g)k", "Inversión sf(k)"), col=c("slateblue2", "slategray3"), lwd=3, bty="n", cex=1)
+
+grid()
+```
+
+La gráfica nos indica que la inclusión del progreso tecnológico no altera significativamente el análisis del estado estacionario. Hay un nivel de $k$, representado por $k^*$, en el que el capital por trabajador efectivo y la producción por trabajador efectivo son constantes. Este estado estacionario representa, al igual que antes, el equilibrio de la economía a largo plazo.
+
+Según el modelo de Solow, el progreso tecnológico es lo único que puede explicar los niveles de vida continuamente crecientes.
+
+**Tasas de crecimiento del estado estacionario en el modelo de Solow con progreso tecnológico**
+
+| Variable | Símbolo | Tasa de crecimiento en el estado estacionario |
+|-------------------------|------------------|-----------------------------|
+| Capital por trabajador efectivo | k= K / (E×L) | 0 |
+| Producción por trabajador efectivo | y= Y / (E×L) = f(k) | 0 |
+| Producción por trabajador | Y/L= y×E | g |
+| Producción total | Y= y×(E×L) | n+g |
+
+*Fuente: Mankiw, Gregory (Macroeconomía), p.351*
+
+La introducción del progreso tecnológico también modifica el criterio para alcanzar la regla de oro. Ahora el nivel de capital de la regla de oro es el estado estacionario que maximiza el consumo por trabajador efectivo.
+
+El estado estacionario del consumo por trabajador efectivo es:
+
+$$c^*=f(k^*)-(δ+n+g)k^*$$ Y el consumo se maximiza en el estado estacionario si:
+
+$$PMK=δ+n+g$$ O bien:
+
+$$PMK-δ=n+g$$
+
+Este criterio permite evaluar si una economía tiene un stock de capital superior o inferior al óptimo, considerando tanto el crecimiento demográfico como el avance tecnológico.
+
+## **g) La convergencia**
+
+Los países pobres tienen unos niveles de renta per cápita que representan menos de una décima parte de los niveles que tienen los países ricos.
+
+El modelo de Solow hace claras predicciones sobre el momento en que se produce la convergencia. Según el modelo, dos economías convergerán o no dependiendo de las causas por las que son diferentes.
+
+```{r}
+#| code-fold: true 
+#| fig-align: center
+
+alpha <- 0.5
+delta <- 0.05
+s_oro <- alpha      
+k <- seq(0, 500, length.out = 500)
+
+f_k <- k^alpha
+i_k <- s_oro * f_k
+d_k <- delta * k
+
+k_oro <- (alpha / delta)^(1/(1 - alpha))
+y_oro <- k_oro^alpha
+i_oro <- s_oro * y_oro
+c_oro <- y_oro - i_oro
+
+par(mar = c(5, 8, 2, 2)) 
+
+plot(k, f_k, type = "l", lwd = 2, col = "slateblue4", ylim = c(0, max(f_k)),
+     xlab = "Capital por trabajador en el estado estacionario (k*)",
+     ylab = "Producción, depreciación e inversión 
+     por trabajador en el estado estacionario")
+
+lines(k, i_k, lwd = 2, col = "turquoise")
+lines(k, d_k, lwd = 2, col = "violetred")
+abline(v = k_oro, lty = 2, lwd = 1.5, col = "black")
+
+points(k_oro, y_oro, pch = 16, cex = 1.2, col = "firebrick")
+
+legend("topleft", legend = c(expression(f(k^"*")),
+                             expression(s[oro]*f(k^"*")),
+                             expression(delta*k^"*")),
+       lwd = 2, col = c("slateblue4", "turquoise", "violetred"), lty = 1, bty = "n")
+grid()
+```
+
+Supongamos, que dos economías comienzan teniendo diferentes stocks de capital, debido a un accidente histórico, pero el mismo estado estacionario, determinado por sus tasas de ahorro, sus tasas de crecimiento de la población y la eficiencia del trabajo.
+
+Las dos economías convergerán: la más pobre, que tiene menos stock de capital, crecerá naturalmente más deprisa para alcanzar el estado estacionario.
+
+En cambio, si dos economías tienen estados estacionarios diferentes, debido quizá a que tienen tasas de ahorro distintas, no habá convergencia, sino que cada una se aproximará a su estado estacionario propio.
+
+*Bibliografía: Mankiw, Gregory (2014). Macroeconomía, Barcelona, España, Antoni Bosch Editor, p.288-375.*
+
+# EJERCICIO PRÁCTICO
+
+**México; factores determinantes del crecimiento per cápita, 1993-2023**
+
+Utilizaremos el modelo de Solow para estimar los pronósticos del PIB para la economía mexicana en el periodo 1993-2023
+
+Consideramos:
+
+-   $y = f(k)$
+
+-   $k = \frac{K}{L}$ representa el capital por trabajador efectivo
+
+-   $y = \frac{Y}{L}$ representa la producción por trabajador efectivo
+
+-   $Δk = sf(k)-(δ+n+g)k$
+
+-   $log_{y}(Y)_{93-23}=B_{0}+x_{1}*log(\frac{I}{L})-x_{2}*log(n+delta+beta)$ donde I es Inversión
+
+-   Supuesto (beta+delta)= 0.05
+
+-   Supuesto $S=I$,es decir, ahorro es igual a inversión
+
+```{r}
+#| code-fold: true 
+
+datos <- read_excel("C:/Users/kelip/OneDrive/Documentos/Análisis Numérico/Proyecto Final/modelo_solow.xlsx")
+```
+
+```{r}
+#| code-fold: true 
+
+pronosticos <- read_excel("C:/Users/kelip/OneDrive/Documentos/Análisis Numérico/Proyecto Final/pronosticos.xlsx")
+```
+
+## Modelo de Regresión
+
+```{r}
+#| code-fold: true 
+
+modelo <- lm(Log_PIB_trabajador_efectivo ~ Log_Capital_trabajador_efectivo + Log_Tasa_depreciación_efectiva, data = datos)
+summary(modelo)
+```
+
+Los resultados muestran que el coeficiente del logaritmo del capital por trabajador efectivo es de aproximadamente 0.345, altamente significativo. Esto implica que un aumento del 1% en el capital por trabajador efectivo se asocia, en promedio, con un incremento del 0.34541% en el PIB por trabajador efectivo. Esto se asocia muy bien con las predicciones del modelo de Solow, donde la acumulación de capital es un motor clave del crecimiento económico per cápita.
+
+Por otro lado, el coeficiente de la tasa de depreciación efectiva es negativo (-0.19599), lo que indica que mayores tasas de depreciación, crecimiento poblacional o menor progreso tecnológico tienden a reducir el nivel de PIB por trabajador efectivo. Aunque este coeficiente no es tan significativo estadísticamente (p = 0.0932), el signo es coherente con la teoría, donde estas variables actúan como frenos de crecimiento.
+
+El modelo explica un 81% de la variación observada en el PIB por el trabajador efectivo (R-squared), lo que indica que hay un buen ajuste.
+
+## Pronóstico del Logaritmo del PIB por tabajador efectivo y el PIB
+
+```{r}
+#| code-fold: true 
+
+datos$Log_PIB_trabajador_efectivo_pred <- predict(modelo, newdata = datos)
+datos$PIB_pred <- exp(datos$Log_PIB_trabajador_efectivo_pred)
+```
+
+## Gráficas
+
+### A. Regresión: Logaritmo del PIB por trabajador efectivo vs Logaritmo del Capital por trabajador efectivo.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+#| code-fold: true 
+#| fig-align: center
+
+ggplot(data = datos, aes(x = Log_Capital_trabajador_efectivo, y = Log_PIB_trabajador_efectivo))+
+  geom_point(color = "darkblue", size = 3)+
+  geom_smooth(method = "lm", formula = y ~ x, color = "firebrick", se=FALSE)+
+  labs(
+    title= "Log del PIB por trabajador efectivo ~ Log del Capital por trabajador efectivo", x = "Log del Capital por trabajador efectivo", y="Log del PIB por trabajador efectivo")+
+  theme_bw()
+```
+
+En la gráfica, los puntos azules corresponden a las observaciones anuales y la línea roja muestra el ajuste lineal obtenido mediante la regresión.
+
+La dispersión de los puntos alrededor de la línea de tendencia es baja, lo que indica que existe una fuerte relación lineal positiva entre ambas variables. Esto significa que a medida que el capital por trabajador efectivo aumenta, el PIB por trabajador efectivo también tiende a aumentar.
+
+La pendiente positiva de la línea de regresión es consistente con la teoría del modelo de Solow, que predice que una mayor dotación de capital por trabajador conduce a mayores niveles de producción por trabajador.
+
+### B. Regresión: Logaritmo del PIB por trabajador efectivo vs Logaritmo de la Tasa de depreciación efectiva.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+#| code-fold: true 
+#| fig-align: center
+
+ggplot(data = datos, aes(x = Log_Tasa_depreciación_efectiva, y = Log_PIB_trabajador_efectivo))+
+  geom_point(color = "chocolate3", size = 3)+
+  geom_smooth(method = "lm", formula = y ~ x, color = "dodgerblue3", se=FALSE)+
+  labs(
+    title= "Log del PIB por trabajador efectivo ~ Log de la Tasa de depreciación efectiva", x = "Log de la Tasa de depreciación efectiva", y="Log del PIB por trabajador efectivo")+
+  theme_bw()
+```
+
+Podemos observar que existe una relación negativa entre ambas variables, es decir, a medida que la tasa de depreciación efectiva aumenta, el PIB por trabajador efectivo tiende a disminuir. Esta pendiente negativa es consistente con la predicción teórica del modelo, ya que este señala que mayores tasas de depreciación efectiva dificultan la acumulación de capital y, por lo tanto, limitan el crecimiento económico per cápita.
+
+### C. PIB real vs PIB pronosticado
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+#| code-fold: true 
+#| fig-align: center
+
+plot(datos$Años, datos$PIB, type = "l", col = "darkolivegreen1", lwd = 2,
+     main = "PIB real ~ PIB pronosticado",
+     xlab = "Año", ylab = "PIB por trabajador efectivo")
+lines(datos$Años, datos$PIB_pred, col = "darkseagreen", lwd = 2, lty = 2)
+legend("topleft", legend = c("PIB real", "PIB pronosticado"), col = c("darkolivegreen1", "darkseagreen"), lty=1:2, lwd = 2)
+```
+
+En la mayoría de los años tanto el PIB real como el PIB pronosticado, se mantienen cerca, lo que indica que los pronósticos generados por el modelo de Solow reproducen de manera satisfactoria el comportamiento observado de la economía mexicana durante las últimas tres décadas.
+
+Si bien existen algunas desviaciones puntuales entre el PIB real y el pronosticado, especialmente en periodos de mayor volatilidad o crisis, la correspondencia general entre ambas series sugiere que los factores considerados en el modelo explican en buena medida el crecimiento per cápita de México.
+
+## Análisis
+
+**¿Los coeficientes tienen los signos esperados por la teoría?**
+
+```{r}
+#| code-fold: true
+#| fig-align: center
+
+cat("Coeficientes del modelo:\n")
+print(coef(modelo))
+cat("¿Los coeficientes tienen los signos esperados por la teoría? Positivo para Log(K/L) y Negativo para Log(n+delta+beta)\n")
+```
+
+**¿Qué nivel de R² se presenta?**
+
+```{r}
+#| code-fold: true
+#| fig-align: center
+
+cat("R² del modelo:\n")
+print(summary(modelo)$r.squared)
+```
+
+**¿Qué tanto se acercan los pronósticos del modelo con el nivel real del PIB?**
+
+```{r}
+#| code-fold: true
+#| fig-align: center
+
+cat("Errores promedio (real-pronosticado):\n")
+print(mean(abs(datos$PIB - datos$PIB_pred)))
+```
+
+## Error absoluto año a año
+
+```{r}
+#| code-fold: true 
+#| fig-align: center
+
+pronosticos$Error_Absoluto <- abs(pronosticos$PIB_real - pronosticos$PIB_Pronóstico)
+pronosticos$Error_Relativo <- (pronosticos$PIB_real - pronosticos$PIB_Pronóstico) / pronosticos$PIB_real * 100
+pronosticos_error <- na.omit(pronosticos[, c("Años", "Error_Absoluto")])
+pronosticos_error$Años <- as.numeric(pronosticos_error$Años)
+
+ggplot(pronosticos_error, aes(x = Años, y = Error_Absoluto)) +
+  geom_line(color = 'aquamarine4') +
+  labs(title = "Error absoluto de pronóstico año a año", x = "Año", y = "Error absoluto (PIB)")
+```
+
+Podemos observar que el error de pronóstico varía considerablemente a lo largo del tiempo. Hay años en los que el modelo logra pronosticar el PIB con un margen de error relativamente bajo, mientras que en otros años el error se incrementa, como, por ejemplo en 2016-2019.
+
+## Comparación de la Tasa de Crecimiento Anual (TCA)
+
+```{r}
+#| code-fold: true 
+#| fig-align: center
+
+pronosticos_tca <- na.omit(pronosticos[, c("Años", "TCA_real", "TCA_Pronóstico")])
+
+pronosticos_tca$Años <- as.numeric(pronosticos_tca$Años)
+pronosticos_tca$TCA_real <- as.numeric(pronosticos_tca$TCA_real)
+pronosticos_tca$TCA_Pronóstico <- as.numeric(pronosticos_tca$TCA_Pronóstico)
+
+ggplot(pronosticos_tca, aes(x = Años)) +
+  geom_line(aes(y = TCA_real, color = "TCA real")) +
+  geom_line(aes(y = TCA_Pronóstico, color = "TCA pronóstico")) +
+  labs(title = "Comparación de tasas de crecimiento anual (TCA)", x = "Año", y = "TCA %") +
+  scale_color_manual(values = c("TCA real" = "cyan", "TCA pronóstico" = "cyan4"))
+```
+
+Podemos apreciar que la Tasa de crecimiento anual pronosticada sigue de cerca la evolución de la Tasa de crecimiento anual real en la mayor parte del periodo estudiado. Ambos indicadores presentan patrones similares en alzas y bajas, por lo tanto, podemos decir que el modelo si logra medir los años de crecimiento y los de contracción económica.
+
+# CONCLUSIÓN DEL CASO PRÁCTICO
+
+El modelo mostró que el capital por trabajador efectivo es el principal motor de crecimiento, con un impacto positivo, significativo y consistente con la teoría que anteriormente estudiamos. Asimismo, se constató que la tasa de depreciación efectiva ejerce un efecto negativo sobre el PIB por trabajador efectivo, aunque su significado estadístico es menor. Los resultados reflejaron un buen ajuste del modelo, explicando más del 81% de la varibilidad observada.
+
+Las representaciones gráficas reforzaron que la relación entre el capital por trabajador efectivo y el PIB por trabajador efectivo es positiva y lineal, mientras que el efecto de la tasa de depreciación efectiva resulta negativa. Además, la comparación entre el PIB real y el PIB pronosticado evidenció que el modelo de Solow es capaz de medir de manera satisfactoria la evolución del PIB por trabajador efectivo a lo largo de los años.
+
+Finalmente, la comparación de las tasa de crecimiento anual reales y pronosticadas dejó ver que hay un alta correspondencia entre ambas, lo que confirma que el modelo de Solow no solo puede utilizarse para explicar tendencias de nivel, sino que tambien es útil para captar la dinámica de crecimiento y contracción de la economía, en este caso, la mexicana.
+
+PRESENTÓ:
+
+-   Briones Domínguez Saraí Belem
+
+-   Pacheco Almaraz Heidi Idali
+
+-   Romano García Lilian
+
+-   Soto Rodriguez Luz Elvira
+
+-   Zamora Pérez Andrea Anaeli
